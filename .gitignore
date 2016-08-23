@@ -28,4 +28,9 @@
 *.out
 *.app
 
+# Build directory
 Source/build
+
+# KDevelop project files
+Source/.kdev4/
+Source/Source.kdev4

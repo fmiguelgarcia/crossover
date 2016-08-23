@@ -1,11 +1,12 @@
 #include "agent.hpp"
+#include "SystemMeasurement.hpp"
 #include <QTimer>
 #include <QSettings>
 #include <QDebug>
-#inc
-lude <QDateTime>
+#include <QDateTime>
 
 using namespace crossOver::client;
+using namespace crossOver::common;
 
 Agent::Agent( QObject *parent )
 	:QObject( parent)
@@ -25,6 +26,11 @@ Agent::Agent( QObject *parent )
 
 void Agent::doMeasurements()
 {
-	qDebug() << "crossOver::client::Agent is taking a sample at " << QDateTime::currentDateTime().toString( Qt::ISODate);
+	SystemMeasurement sm = makeSystemMeasurement();
+  qDebug() << "[crossOver::client::Agent][" << QDateTime::currentDateTime().toString( Qt::ISODate) << "]"
+          << " CPU load: " << sm.cpuLoad << "%"
+          << " free RAM: " << sm.freeRam << " bytes"
+          << " total RAM: " << sm.totalRam <<  " bytes"
+          << " Num Processes: " << sm.numProcs;
 
 }

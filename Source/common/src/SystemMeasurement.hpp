@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 namespace crossOver
 {
@@ -6,9 +7,12 @@ namespace crossOver
 	{
 		struct SystemMeasurement
 		{
-			std::uintmax_t memory;
-			std::double cpuPerc;
-			std::uintmax_t runningProc;
+      SystemMeasurement();
+
+			double cpuLoad;
+      std::uintmax_t totalRam;
+      std::uintmax_t freeRam;
+			std::uintmax_t numProcs;
 		};
 
 		SystemMeasurement makeSystemMeasurement();

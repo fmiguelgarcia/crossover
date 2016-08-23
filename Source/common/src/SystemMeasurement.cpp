@@ -1,14 +1,33 @@
 #include "SystemMeasurement.hpp"
+// #include <cstdlib>
+// #include <unistd.h>
+#include <sys/sysinfo.h>
 
-using namespace crossOver::SystemMeasurement;
-const int MAX_LOAD_AVG_SAMPLES = 3;
+using namespace crossOver::common;
+using namespace std;
 
+namespace
+{}
 
-SystemMeasurement makeSystemMeasurement()
+SystemMeasurement::SystemMeasurement()
+  : cpuLoad(0.0), freeRam(0), numProcs(0)
+{}
+
+SystemMeasurement crossOver::common::makeSystemMeasurement()
 {
-	// Load cpu 
-	double loadAvg[MAX_LOAD_AVG_SAMPLES];	
-	const int nProc = getloadavg( loadAvg, MAX_LOAD_AVG_SAMPLES);
+  SystemMeasurement sm;
 
-	return {0, loadAvg[0], 0};
+#if defined(__linux__)
+  struct sysinfo info;
+  const int sysStatus = sysinfo( &info);
+  if (sysStatus == 0)
+  {
+    // Using 5 minute load average.
+    sm.cpuLoad = (info.loads[1]  / 65536.0);
+    sm.totalRam = info.totalram;
+    sm.freeRam = info.freeram;
+    sm.numProcs = info.procs;
+  }
+#endif
+	return sm;
 }
