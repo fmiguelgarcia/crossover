@@ -1,7 +1,14 @@
 #pragma once
+#include "SystemMeasurement.hpp"
 #include <QObject>
+#include <QSemaphore>
+#include <queue>
+#include <mutex>
+#include <memory>
 
+class QNetworkAccessManager;
 class QTimer;
+class QIODevice;
 namespace crossOver
 {
 	namespace client
@@ -14,12 +21,18 @@ namespace crossOver
 
 			signals:
 				void finished ();
-
-			private slots:
-				void doMeasurements();
+				void tryToSendMeasurements();
 
 			private:
+				void sendMeasurement( const QByteArray data);
+				void doAndSendMeasurements();
+
+			private:
+				QNetworkAccessManager *m_nam;
 				QTimer *m_sampleTimer;
+				std::unique_ptr<QSemaphore> m_measurementsSem;
+				std::queue<crossOver::common::SystemMeasurement> m_mesurements;
+				std::mutex m_mesurementsMtx;
 				
 		};
 	}

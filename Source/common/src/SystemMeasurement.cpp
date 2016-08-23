@@ -1,6 +1,7 @@
 #include "SystemMeasurement.hpp"
-// #include <cstdlib>
-// #include <unistd.h>
+#include <QIODevice>
+#include <QTextStream>
+
 #include <sys/sysinfo.h>
 
 using namespace crossOver::common;
@@ -12,6 +13,22 @@ namespace
 SystemMeasurement::SystemMeasurement()
   : cpuLoad(0.0), freeRam(0), numProcs(0)
 {}
+
+void SystemMeasurement::serializeTo(QIODevice* dev) const
+{
+	QChar sp(' ');
+	QTextStream out(dev);
+	out << cpuLoad << sp << freeRam << sp <<  totalRam << sp <<  numProcs;
+}
+
+void SystemMeasurement::deserializeFrom(QIODevice* dev)
+{
+	QChar sp;
+	QTextStream in(dev);
+	in >> cpuLoad >> sp >> freeRam >> sp >> totalRam >> sp >> numProcs;
+}
+
+
 
 SystemMeasurement crossOver::common::makeSystemMeasurement()
 {

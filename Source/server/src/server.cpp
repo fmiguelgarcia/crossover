@@ -1,4 +1,6 @@
 #include "server.hpp"
+#include "SystemMeasurement.hpp"
+#include "SimpleHttpServer.hpp"
 #include <QCoreApplication>
 #include <QSettings>
 #include <QNetworkAccessManager>
@@ -9,26 +11,24 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QFileInfo>
+#include <QBuffer>
+#include <QTimer>
 
 using namespace crossOver::server;
+using namespace crossOver::common;
+
+namespace {
+	inline QString debugHeader() noexcept
+	{ return QStringLiteral( "[crossOver::server::Server]");}
+
+
+}
 
 Server::Server( QObject *parent)
   : QObject(parent)
 {
   setupDB();
   setupTcpServer();
-}
-
-void Server::setupTcpServer()
-{
-  QSettings settings;
-  const quint16 port = settings.value("PORT", 8080).toUInt();
-
-  m_tcpServer = new QTcpServer(this);
-  connect( m_tcpServer, &QTcpServer::newConnection, this, &Server::onNewConnection);
-
-  if ( !m_tcpServer->listen( QHostAddress::Any, port))
-    qFatal("[crossOver::server::Server] It can not listen on port %d", port);
 }
 
 void Server::setupDB()
@@ -82,16 +82,24 @@ void Server::initializeTablesIfNotExist()
   }while (!sqlScriptLine.isNull());
 }
 
-
-void Server::onNewConnection()
+void Server::setupTcpServer()
 {
-  QTcpSocket * client = m_tcpServer->nextPendingConnection();
-  connect (client, &QAbstractSocket::disconnected, client, &QObject::deleteLater);
-
-  /// @todo Process
-
-  client->disconnectFromHost();
+	m_httpServer = new SimpleHttpServer( this);
+	connect( m_httpServer, &SimpleHttpServer::payLoadReady, this, &Server::deserializePayLoad);
 }
+
+void Server::deserializePayLoad( QByteArray data)
+{
+	SystemMeasurement sm;
+
+	QBuffer buffer(&data);
+	buffer.open( QIODevice::ReadOnly);
+	sm.deserializeFrom( &buffer);
+
+	qDebug() << debugHeader() << "Cpu: " << sm.cpuLoad <<  " Free Ram: " <<  sm.freeRam << " Procs: " <<  sm.numProcs;
+}
+
+
 
 int main( int argc, char *argv[])
 {
@@ -102,6 +110,7 @@ int main( int argc, char *argv[])
 
 	QSettings::setPath( QSettings::NativeFormat, QSettings::SystemScope, QCoreApplication::applicationDirPath());
 	Server *server = new Server(&app);
+	Q_UNUSED(server);
 
 	return app.exec ();
 }

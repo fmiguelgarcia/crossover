@@ -1,30 +1,29 @@
 #pragma once
 #include <QObject>
+#include <QByteArray>
 
-// class QNetworkAccessManager;
-class QTcpServer;
 namespace crossOver
 {
-  namespace server
-  {
-    class Server
-      : public QObject
-    {
-      Q_OBJECT
-      public:
-        Server( QObject *parent = nullptr);
+	namespace server
+	{
 
-      private slots:
-        void onNewConnection();
+		class SimpleHttpServer;
+		class Server
+			: public QObject
+		{
+				Q_OBJECT
+			public:
+				Server( QObject *parent = nullptr );
 
-      private:
-        void setupTcpServer();
-        void setupDBDefaultConnection();
-        void initializeTablesIfNotExist();
-        void setupDB();
+			private:
+				void setupTcpServer();
+				void setupDBDefaultConnection();
+				void initializeTablesIfNotExist();
+				void setupDB();
+				void deserializePayLoad( QByteArray data);
 
-      private:
-        QTcpServer* m_tcpServer;
-    };
-  }
+			private:
+				SimpleHttpServer *m_httpServer;
+		};
+	}
 }

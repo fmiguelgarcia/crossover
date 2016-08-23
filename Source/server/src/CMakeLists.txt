@@ -5,7 +5,7 @@ find_package(Qt5Sql)
 set( CMAKE_AUTOMOC ON)
 set( CMAKE_AUTORCC ON)
 
-set( server_SRCS server.cpp server.qrc )
+set( server_SRCS server.cpp SimpleHttpServer.cpp server.qrc )
 
 add_executable( server ${server_SRCS})
 target_link_libraries( server common Qt5::Core Qt5::Network Qt5::Sql)

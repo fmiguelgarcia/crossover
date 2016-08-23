@@ -1,18 +1,22 @@
 #pragma once
-#include <cstdint>
+#include <QtGlobal>
 
+class QIODevice;
 namespace crossOver
 {
 	namespace common
 	{
 		struct SystemMeasurement
 		{
-      SystemMeasurement();
+			SystemMeasurement();
+
+			void serializeTo( QIODevice *dev) const;
+			void deserializeFrom( QIODevice *dev);
 
 			double cpuLoad;
-      std::uintmax_t totalRam;
-      std::uintmax_t freeRam;
-			std::uintmax_t numProcs;
+			quint64 totalRam;
+			quint64 freeRam;
+			quint64 numProcs;
 		};
 
 		SystemMeasurement makeSystemMeasurement();
