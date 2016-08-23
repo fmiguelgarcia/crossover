@@ -16,8 +16,14 @@ namespace crossOver
 
       private slots:
         void onNewConnection();
+
       private:
-        // QNetworkAccessManager *m_nam;
+        void setupTcpServer();
+        void setupDBDefaultConnection();
+        void initializeTablesIfNotExist();
+        void setupDB();
+
+      private:
         QTcpServer* m_tcpServer;
     };
   }
