@@ -3,7 +3,7 @@ find_package(Qt5Core)
 find_package(Qt5Network)
 set( CMAKE_AUTOMOC ON)
 
-set( client_SRCS agent.cpp client.cpp )
+set( client_SRCS agent.cpp client.cpp Session.cpp )
 
 add_executable( client ${client_SRCS})
 target_link_libraries( client common Qt5::Core Qt5::Network)
