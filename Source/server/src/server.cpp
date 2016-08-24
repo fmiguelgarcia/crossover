@@ -28,8 +28,16 @@ Server::Server( QObject *parent)
   : QObject(parent)
 {
   setupDB();
+  setupClientsAuthAndAlarms();
   setupTcpServer();
 }
+
+void Server::setupClientsAuthAndAlarms()
+{
+  QFileInfo xmlCCPath( QDir(QCoreApplication::applicationDirPath()), "clientDefaultConf.xml");
+  m_clientsConf = loadClientConfFromXml(xmlCCPath.absoluteFilePath());
+}
+
 
 void Server::setupDB()
 {

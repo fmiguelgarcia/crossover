@@ -37,17 +37,21 @@ using namespace std;
 namespace {
   void loadAlert( ClientAlert& ca, QDomElement alertElem)
   {
-    QString type = alertElem.attribute("type");
-    QString limit = alertElem.attribute("limit", "-1");
+    bool memoryLimitOk, cpuLimitOk, processesLimitOk;
+    const QString type = alertElem.attribute("type").trimmed();
+    const QString limit = alertElem.attribute("limit", "-1").trimmed().remove("%");
 
     if (type == "memory")
-      ca.memoryLimit = limit.toDouble();
+      ca.memoryLimit = limit.toDouble( &memoryLimitOk);
     else if (type == "cpu")
-      ca.cpuLimit = limit.toDouble();
+      ca.cpuLimit = limit.toDouble( &cpuLimitOk);
     else if (type == "processes")
-      ca.processesLimit = limit.toUInt();
+      ca.processesLimit = limit.toUInt( &processesLimitOk);
     else
-      qWarning() <<  "XD£X";
+      qWarning( "Unknow alert type while loading client configuration file: %s", type.toLocal8Bit().constData());
+
+    if (!(memoryLimitOk && cpuLimitOk && processesLimitOk))
+      qWarning( "Error while loading the limit value of an alert");
   }
 
   ClientConfiguration loadClientNode( QDomElement clientElem)
@@ -65,9 +69,11 @@ namespace {
   }
 }
 
-vector< ClientConfiguration > loadClientConfFromXml( QString filePath)
+vector< ClientConfiguration > crossOver::server::loadClientConfFromXml( QString filePath)
 {
   vector<ClientConfiguration> ccList;
+  QString errorMsg;
+  int errorLine,  errorColumn;
 
   // 1. Load DOM document
   QFile f(filePath);
@@ -75,12 +81,16 @@ vector< ClientConfiguration > loadClientConfFromXml( QString filePath)
     qFatal("XXX");
 
   QDomDocument doc("clientConf");
-  if (!doc.setContent(&f))
-    qFatal( "YYY");
+  if (!doc.setContent(&f, false, &errorMsg,  &errorLine, &errorColumn))
+  {
+    qFatal( "Error parsing the client configuration at %d, %d: %s",
+      errorLine, errorColumn, errorMsg.toLocal8Bit().constData());
+  }
   f.close();
 
-  QDomElement docElem = doc.documentElement();
-  QDomNode clientNode = docElem.firstChild();
+  QDomElement rootElem = doc.documentElement();
+
+  QDomNode clientNode = rootElem.firstChild();
   while ( !clientNode.isNull())
   {
     ClientConfiguration cc = loadClientNode( clientNode.toElement());

@@ -1,4 +1,5 @@
 #pragma once
+#include "ClientConfiguration.h"
 #include <QObject>
 #include <QByteArray>
 
@@ -21,9 +22,11 @@ namespace crossOver
 				void initializeTablesIfNotExist();
 				void setupDB();
 				void deserializePayLoad( QByteArray data);
+        void setupClientsAuthAndAlarms();
 
 			private:
 				SimpleHttpServer *m_httpServer;
+				std::vector<ClientConfiguration> m_clientsConf;
 		};
 	}
 }

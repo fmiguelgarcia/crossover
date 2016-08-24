@@ -20,3 +20,4 @@ set_property( TARGET server PROPERTY CXX_STANDARD 11)
 set_property( TARGET server APPEND_STRING PROPERTY COMPILE_FLAGS "-Wall -std=c++11")
 
 install( TARGETS server RUNTIME DESTINATION bin)
+install( FILES ../resource/clientDefaultConf.xml DESTINATION bin)
