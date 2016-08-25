@@ -52,8 +52,8 @@ Session::Session (QUrl server, QObject *parent)
   : QObject (parent), m_server(server)
 {
 	QSettings settings;
-	const QString user = settings.value( "AUTH_USER").toString();
-	const QString password = settings.value( "AUTH_PASSWORD").toString();
+	const QString user = settings.value( "AUTH_USER", "Aladdin").toString();
+	const QString password = settings.value( "AUTH_PASSWORD", "OpenSesame").toString();
 
 	m_netManager = new QNetworkAccessManager( this);
 	connect( m_netManager, &QNetworkAccessManager::authenticationRequired, this,

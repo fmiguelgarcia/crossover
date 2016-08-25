@@ -51,16 +51,20 @@ namespace crossOver
 		{
 			Q_OBJECT
 			public:
-				SimpleHttpServer( QObject* parent = nullptr);
+				explicit SimpleHttpServer( QObject* parent = nullptr);
+
+				void addBasicAuthentication( const QString& realm);
 
 			signals:
-				void payLoadReady( QByteArray data);
+				void payLoadReady( QString realm,  QByteArray data);
 
 			private slots:
 				void onNewConnection();
 				void onReadyRead( std::shared_ptr<HttpRequestProc> rp);
+        void processRequest (std::shared_ptr< HttpRequestProc > rp);
 			private:
 				QTcpServer *m_serverSocket;
+				std::vector<QString> m_basicAuthAllowed;
 		};
 	}
 }

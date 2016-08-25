@@ -21,7 +21,7 @@ namespace crossOver
 				void setupDBDefaultConnection();
 				void initializeTablesIfNotExist();
 				void setupDB();
-				void deserializePayLoad( QByteArray data);
+				void deserializePayLoad( QString realm, QByteArray data);
         void setupClientsAuthAndAlarms();
 
 			private:

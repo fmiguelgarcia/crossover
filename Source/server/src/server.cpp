@@ -96,7 +96,7 @@ void Server::setupTcpServer()
 	connect( m_httpServer, &SimpleHttpServer::payLoadReady, this, &Server::deserializePayLoad);
 }
 
-void Server::deserializePayLoad( QByteArray data)
+void Server::deserializePayLoad( QString realm,  QByteArray data)
 {
 	SystemMeasurement sm;
 

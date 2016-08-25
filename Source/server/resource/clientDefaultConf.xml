@@ -5,7 +5,7 @@
     <alert type="cpu" limit="20%" />
     <alert type="processes" limit="50" />
   </client>
-  <client key="yyy" mail="francisco.miguel.garcia.rodriguez@gmail.com">
+  <client key="QWxhZGRpbjpPcGVuU2VzYW1l" mail="francisco.miguel.garcia.rodriguez@gmail.com">
     <alert type="memory" limit="50%" />
     <alert type="cpu" limit="80%" />
     <alert type="processes" limit="100" />
