@@ -1,4 +1,5 @@
 #include "agent.hpp"
+#include "Session.h"
 #include <QTimer>
 #include <QSettings>
 #include <QDebug>
@@ -17,15 +18,7 @@ namespace {
 	inline QString debugHeader() noexcept
 	{ return QStringLiteral("[crossOver::client::Agent]");}
 
-	void onReplyFinished( QNetworkReply* reply, QNetworkReply::NetworkError error)
-	{
-		if (error != QNetworkReply::NoError)
-		{
-			qWarning() << debugHeader() << "It can not send measurements to server: " << reply->errorString();
-		}
-		// Clean.
-		reply->deleteLater();
-	}
+
 }
 
 Agent::Agent( QObject *parent )
@@ -34,8 +27,6 @@ Agent::Agent( QObject *parent )
 	// load settings.
 	QSettings settings;
 	const uint miliSec = settings.value( "samplePeriodOnMiliSeconds", 5 * 60 * 1000).toUInt();
-
-	m_nam = new QNetworkAccessManager(this);
 
 	// Setup timer
 	m_sampleTimer = new QTimer( this);
@@ -57,36 +48,6 @@ void Agent::doAndSendMeasurements()
 			<< " total RAM: " << sm.totalRam <<  " bytes"
 			<< " Num Processes: " << sm.numProcs;
 
-	// Serialize
-	QBuffer buffer;
-	if (buffer.open( QIODevice::ReadWrite))
-	{
-		sm.serializeTo(&buffer);
-		QByteArray data = buffer.data();
-		qDebug() << debugHeader() << "Serialize data(" << data.size() << ") :" << data;
-		sendMeasurement( data);
-	}
-	else
-		qCritical() << debugHeader() << "It can not serialize measurements";
+	m_serverSession->sendMeasurement( sm);
 }
 
-void Agent::sendMeasurement( const QByteArray data)
-{
-	QSettings settings;
-	QUrl sap = settings.value("SERVER_URL", "http://127.0.0.1:8080").toUrl();
-
-	// Get a connection to the server.
-	QNetworkRequest request(sap);
-	request.setHeader( QNetworkRequest::UserAgentHeader,  "CrossOverClient 1.0");
-	request.setHeader( QNetworkRequest::ContentTypeHeader,  "text/plain");
-	request.setHeader( QNetworkRequest::ContentLengthHeader,  data.size());
-
-	using QNetworkReplyErrorFunc = void (QNetworkReply::*)(QNetworkReply::NetworkError);
-
-	QNetworkReply* reply = m_nam->post( request, data);
-	connect( reply, &QNetworkReply::finished, this,
-		[reply]() { onReplyFinished(reply, QNetworkReply::NoError); });
-	connect( reply, static_cast<QNetworkReplyErrorFunc>(&QNetworkReply::error),
-		this,
-		[reply](QNetworkReply::NetworkError code) { onReplyFinished(reply,code);});
-}

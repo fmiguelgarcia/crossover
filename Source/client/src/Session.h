@@ -25,6 +25,7 @@
  */
 
 #pragma once
+#include "SystemMeasurement.hpp"
 #include <QObject>
 #include <QUrl>
 
@@ -40,6 +41,9 @@ namespace crossOver
       Q_OBJECT
       public:
         explicit Session ( QUrl server, QObject *parent = nullptr);
+
+        void sendMeasurement( const common::SystemMeasurement& sm ) const;
+        void sendMeasurement( const QByteArray ) const;
 
       private:
         QUrl m_server;

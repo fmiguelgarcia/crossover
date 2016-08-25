@@ -26,11 +26,72 @@
 
 #include "Session.h"
 #include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QAuthenticator>
+#include <QBuffer>
+#include <QSettings>
+
 
 using namespace crossOver::client;
+
+namespace
+{
+	void onReplyFinished( QNetworkReply* reply, QNetworkReply::NetworkError error)
+	{
+		if (error != QNetworkReply::NoError)
+		{
+			qWarning() << "It can not send measurements to server: " << reply->errorString();
+		}
+		// Clean.
+		reply->deleteLater();
+	}
+}
 
 Session::Session (QUrl server, QObject *parent)
   : QObject (parent), m_server(server)
 {
-  m_netManager = new QNetworkAccessManager( this);
+	QSettings settings;
+	const QString user = settings.value( "AUTH_USER").toString();
+	const QString password = settings.value( "AUTH_PASSWORD").toString();
+
+	m_netManager = new QNetworkAccessManager( this);
+	connect( m_netManager, &QNetworkAccessManager::authenticationRequired, this,
+		[user, password]( QNetworkReply* reply, QAuthenticator* authenticator) {
+		authenticator->setUser( user);
+		authenticator->setPassword( password);
+	});
+}
+
+void Session::sendMeasurement( const crossOver::common::SystemMeasurement &sm ) const
+{
+	// Serialize
+	QBuffer buffer;
+	if (buffer.open( QIODevice::ReadWrite))
+	{
+		sm.serializeTo(&buffer);
+		QByteArray data = buffer.data();
+		qDebug() << "Serialize data(" << data.size() << ") :" << data;
+		sendMeasurement( data);
+	}
+	else
+		qCritical() << "It can not serialize measurements";
+}
+
+void Session::sendMeasurement( const QByteArray data) const
+{
+	// Get a connection to the server.
+	QNetworkRequest request(m_server);
+	request.setHeader( QNetworkRequest::UserAgentHeader,  "CrossOverClient 1.0");
+	request.setHeader( QNetworkRequest::ContentTypeHeader,  "text/plain");
+	request.setHeader( QNetworkRequest::ContentLengthHeader,  data.size());
+
+	using QNetworkReplyErrorFunc = void (QNetworkReply::*)(QNetworkReply::NetworkError);
+
+	QNetworkReply* reply = m_netManager->post( request, data);
+	connect( reply, &QNetworkReply::finished, this,
+		[reply]() { onReplyFinished(reply, QNetworkReply::NoError); });
+	connect( reply, static_cast<QNetworkReplyErrorFunc>(&QNetworkReply::error),
+		this,
+		[reply](QNetworkReply::NetworkError code) { onReplyFinished(reply,code);});
 }
