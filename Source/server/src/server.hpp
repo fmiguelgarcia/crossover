@@ -1,5 +1,6 @@
 #pragma once
 #include "ClientConfiguration.h"
+#include "SystemMeasurement.hpp"
 #include <QObject>
 #include <QByteArray>
 
@@ -22,6 +23,7 @@ namespace crossOver
 			void setupDB();
 			void deserializePayLoad(QString realm, QByteArray data);
 			void setupClientsAuthAndAlarms();
+			void saveOnDB( const QString& realm, const crossOver::common::SystemMeasurement& sm);
 
 		private:
 			SimpleHttpServer *m_httpServer;

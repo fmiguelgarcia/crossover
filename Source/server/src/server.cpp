@@ -111,6 +111,36 @@ void Server::deserializePayLoad(QString realm, QByteArray data)
 
 	qDebug() << debugHeader() << "Cpu: " << sm.cpuLoad
 					 << " Free Ram: " << sm.freeRam << " Procs: " << sm.numProcs;
+
+	saveOnDB( realm, sm);
+}
+
+void Server::saveOnDB( const QString& realm, const crossOver::common::SystemMeasurement& sm)
+{
+	// 1. Get client ID
+	QSqlDatabase db = QSqlDatabase::database();
+	QSqlQuery clientIdRS = db.exec( QString("SELECT clientId FROM client WHERE realm LIKE %1").arg( realm));
+
+	if (!clientIdRS.next())
+	{
+		/// @todo Insertar el cliente si no existe.
+	}
+
+
+	const int clientId = clientIdRS.value(0).toInt();
+
+	QSqlQuery insertSql(
+			QStringLiteral( "INSERT INTO clientStats ( clientId, sampleEpoc, cpuLoad, freeRam , numRunProcs) VALUES (:clientId, now, :cpuLoad, :freeRam, :numRunProcs)"),
+			db);
+	insertSql.bindValue( ":clientId",  clientId);
+	insertSql.bindValue( ":cpuLoad", sm.cpuLoad );
+	insertSql.bindValue( ":freeRam", sm.freeRam);
+	insertSql.bindValue( ":numRunProcs", sm.numProcs);
+
+	if (!insertSql.exec())
+	{
+		qWarning() << "It can not insert new stats on client " << realm <<  ":" << insertSql.lastError().text();
+	}
 }
 
 int main(int argc, char *argv[])
