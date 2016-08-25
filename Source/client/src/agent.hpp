@@ -8,7 +8,7 @@ namespace crossOver
 {
 	namespace client
 	{
-		class Session;
+		class HttpSession;
 		class Agent : public QObject
 		{
 			Q_OBJECT
@@ -25,7 +25,7 @@ namespace crossOver
 
 			private:
 				QTimer *m_sampleTimer;
-				Session *m_serverSession;
+				HttpSession *m_serverSession;
 		};
 	}
 }

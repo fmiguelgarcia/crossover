@@ -9,24 +9,23 @@ namespace crossOver
 	{
 
 		class SimpleHttpServer;
-		class Server
-			: public QObject
+		class Server : public QObject
 		{
-				Q_OBJECT
-			public:
-				Server( QObject *parent = nullptr );
+			Q_OBJECT
+		public:
+			Server(QObject *parent = nullptr);
 
-			private:
-				void setupTcpServer();
-				void setupDBDefaultConnection();
-				void initializeTablesIfNotExist();
-				void setupDB();
-				void deserializePayLoad( QString realm, QByteArray data);
-        void setupClientsAuthAndAlarms();
+		private:
+			void setupTcpServer();
+			void setupDBDefaultConnection();
+			void initializeTablesIfNotExist();
+			void setupDB();
+			void deserializePayLoad(QString realm, QByteArray data);
+			void setupClientsAuthAndAlarms();
 
-			private:
-				SimpleHttpServer *m_httpServer;
-				std::vector<ClientConfiguration> m_clientsConf;
+		private:
+			SimpleHttpServer *m_httpServer;
+			std::vector<ClientConfiguration> m_clientsConf;
 		};
 	}
 }

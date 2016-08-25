@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016 Francisco Miguel Garcia <miguel_garcia@programmingresearch.com>
+ * Copyright (c) 2016 Francisco Miguel Garcia
+ *<miguel_garcia@programmingresearch.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -35,68 +36,69 @@ using namespace crossOver::server;
 using namespace std;
 
 namespace {
-  void loadAlert( ClientAlert& ca, QDomElement alertElem)
-  {
-    bool memoryLimitOk, cpuLimitOk, processesLimitOk;
-    const QString type = alertElem.attribute("type").trimmed();
-    const QString limit = alertElem.attribute("limit", "-1").trimmed().remove("%");
+	void loadAlert(ClientAlert &ca, QDomElement alertElem) {
+		bool memoryLimitOk = true;
+		bool cpuLimitOk = true;
+		bool processesLimitOk = true;
 
-    if (type == "memory")
-      ca.memoryLimit = limit.toDouble( &memoryLimitOk);
-    else if (type == "cpu")
-      ca.cpuLimit = limit.toDouble( &cpuLimitOk);
-    else if (type == "processes")
-      ca.processesLimit = limit.toUInt( &processesLimitOk);
-    else
-      qWarning( "Unknow alert type while loading client configuration file: %s", type.toLocal8Bit().constData());
+		const QString type = alertElem.attribute("type").trimmed();
+		const QString limit =
+				alertElem.attribute("limit", "-1").trimmed().remove("%");
 
-    if (!(memoryLimitOk && cpuLimitOk && processesLimitOk))
-      qWarning( "Error while loading the limit value of an alert");
-  }
+		if (type == "memory")
+			ca.memoryLimit = limit.toDouble(&memoryLimitOk);
+		else if (type == "cpu")
+			ca.cpuLimit = limit.toDouble(&cpuLimitOk);
+		else if (type == "processes")
+			ca.processesLimit = limit.toUInt(&processesLimitOk);
+		else
+			qWarning("Unknow alert type while loading client configuration file: %s",
+							 type.toLocal8Bit().constData());
 
-  ClientConfiguration loadClientNode( QDomElement clientElem)
-  {
-    ClientConfiguration cc;
+		if (!(memoryLimitOk && cpuLimitOk && processesLimitOk))
+			qWarning("Error while loading the limit value of an alert");
+	}
 
-    cc.key = clientElem.attribute("key");
-    cc.mail = clientElem.attribute("mail");
+	ClientConfiguration loadClientNode(QDomElement clientElem) {
+		ClientConfiguration cc;
 
-    QDomNodeList alertNodeList = clientElem.elementsByTagName("alert");
-    for (int i = 0; i < alertNodeList.size(); ++i)
-      loadAlert( cc.alerts, alertNodeList.at(i).toElement());
+		cc.key = clientElem.attribute("key");
+		cc.mail = clientElem.attribute("mail");
 
-    return cc;
-  }
+		QDomNodeList alertNodeList = clientElem.elementsByTagName("alert");
+		for (int i = 0; i < alertNodeList.size(); ++i)
+			loadAlert(cc.alerts, alertNodeList.at(i).toElement());
+
+		return cc;
+	}
 }
 
-vector< ClientConfiguration > crossOver::server::loadClientConfFromXml( QString filePath)
-{
-  vector<ClientConfiguration> ccList;
-  QString errorMsg;
-  int errorLine,  errorColumn;
+vector<ClientConfiguration>
+crossOver::server::loadClientConfFromXml(QString filePath) {
+	vector<ClientConfiguration> ccList;
+	QString errorMsg;
+	int errorLine, errorColumn;
 
-  // 1. Load DOM document
-  QFile f(filePath);
-  if (!f.open(QIODevice::ReadOnly))
-    qFatal("XXX");
+	// 1. Load DOM document
+	QFile f(filePath);
+	if (!f.open(QIODevice::ReadOnly))
+		qFatal("XXX");
 
-  QDomDocument doc("clientConf");
-  if (!doc.setContent(&f, false, &errorMsg,  &errorLine, &errorColumn))
-  {
-    qFatal( "Error parsing the client configuration at %d, %d: %s",
-      errorLine, errorColumn, errorMsg.toLocal8Bit().constData());
-  }
-  f.close();
+	QDomDocument doc("clientConf");
+	if (!doc.setContent(&f, false, &errorMsg, &errorLine, &errorColumn)) {
+		qFatal("Error parsing the client configuration at %d, %d: %s", errorLine,
+					 errorColumn, errorMsg.toLocal8Bit().constData());
+	}
+	f.close();
 
-  QDomElement rootElem = doc.documentElement();
+	QDomElement rootElem = doc.documentElement();
 
-  QDomNode clientNode = rootElem.firstChild();
-  while ( !clientNode.isNull())
-  {
-    ClientConfiguration cc = loadClientNode( clientNode.toElement());
-    ccList.push_back(cc);
-    clientNode = clientNode.nextSibling();
-  }
+	QDomNode clientNode = rootElem.firstChild();
+	while (!clientNode.isNull()) {
+		ClientConfiguration cc = loadClientNode(clientNode.toElement());
+		ccList.push_back(cc);
+		clientNode = clientNode.nextSibling();
+	}
 
-  return ccList;
+	return ccList;
 }

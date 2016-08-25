@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016 Francisco Miguel Garcia <francisco.miguel.garcia.rodriguez@gmail.com>
+ * Copyright (c) 2016 Francisco Miguel Garcia
+ *<francisco.miguel.garcia.rodriguez@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -27,44 +28,40 @@
 #include <QObject>
 #include <QVariant>
 #include <QByteArray>
-#include <QMap>
 #include <memory>
+#include <map>
 
 class QTcpSocket;
 class QTcpServer;
-namespace crossOver
-{
-	namespace server
-	{
-		struct HttpRequestProc
-		{
-			QTcpSocket * client;
-			QMap<QString, QString> headers;
+namespace crossOver {
+	namespace server {
+		struct HttpRequestProc {
+			QTcpSocket *client;
+			std::map<QString, QString> headers;
 			QByteArray content;
 
 			bool isHeaderFinished() const;
 			bool isContentReady() const;
 		};
 
-		class SimpleHttpServer
-			: public QObject
-		{
+		class SimpleHttpServer : public QObject {
 			Q_OBJECT
-			public:
-				explicit SimpleHttpServer( QObject* parent = nullptr);
+		public:
+			explicit SimpleHttpServer(QObject *parent = nullptr);
 
-				void addBasicAuthentication( const QString& realm);
+			void addBasicAuthentication(const QString &realm);
 
-			signals:
-				void payLoadReady( QString realm,  QByteArray data);
+		signals:
+			void payLoadReady(QString realm, QByteArray data);
 
-			private slots:
-				void onNewConnection();
-				void onReadyRead( std::shared_ptr<HttpRequestProc> rp);
-        void processRequest (std::shared_ptr< HttpRequestProc > rp);
-			private:
-				QTcpServer *m_serverSocket;
-				std::vector<QString> m_basicAuthAllowed;
+		private slots:
+			void onNewConnection();
+			void onReadyRead(std::shared_ptr<HttpRequestProc> rp);
+			void processRequest(std::shared_ptr<HttpRequestProc> rp);
+
+		private:
+			QTcpServer *m_serverSocket;
+			std::vector<QString> m_basicAuthAllowed;
 		};
 	}
 }

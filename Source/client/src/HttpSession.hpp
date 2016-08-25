@@ -32,22 +32,21 @@
 class QNetworkAccessManager;
 namespace crossOver
 {
-  namespace client
-  {
+namespace client
+{
+class HttpSession
+    : public QObject
+{
+    Q_OBJECT
+public:
+    explicit HttpSession ( QUrl server, QObject *parent = nullptr );
 
-    class Session
-      : public QObject
-    {
-      Q_OBJECT
-      public:
-        explicit Session ( QUrl server, QObject *parent = nullptr);
+    void sendMeasurement ( const common::SystemMeasurement &sm ) const;
+    void sendMeasurement ( const QByteArray ) const;
 
-        void sendMeasurement( const common::SystemMeasurement& sm ) const;
-        void sendMeasurement( const QByteArray ) const;
-
-      private:
-        QUrl m_server;
-        QNetworkAccessManager *m_netManager;
-    };
-  }
+private:
+    QUrl m_server;
+    QNetworkAccessManager *m_netManager;
+};
+}
 }
