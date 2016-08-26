@@ -25,9 +25,7 @@
  */
 #pragma once
 #include <QString>
-#include <QVariant>
 #include <vector>
-
 
 namespace crossOver
 {
@@ -42,11 +40,14 @@ namespace crossOver
 
     struct ClientConfiguration
     {
+      ClientConfiguration();
+      explicit ClientConfiguration( const QString& key);
+
       QString mail;
       QString key;
       ClientAlert alerts;
     };
 
-    std::vector<ClientConfiguration> loadClientConfFromXml(QString filePath);
+    std::vector<ClientConfiguration> loadClientConfFromXml( const QString& filePath);
   }
 }

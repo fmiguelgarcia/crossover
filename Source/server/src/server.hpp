@@ -25,6 +25,7 @@ namespace crossOver
 
     private:
       QString findClientMail( const QString &realm) const;
+      void checkAlertForClient(QString realm, QString findClientMail, common::SystemMeasurement sm);
 
 		private:
 			SimpleHttpServer *m_httpServer;

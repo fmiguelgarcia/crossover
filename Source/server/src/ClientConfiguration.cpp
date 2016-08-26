@@ -73,8 +73,14 @@ namespace {
 	}
 }
 
+ClientConfiguration::ClientConfiguration() = default;
+
+ClientConfiguration::ClientConfiguration( const QString& key)
+  : key(key)
+{}
+
 vector<ClientConfiguration>
-crossOver::server::loadClientConfFromXml(QString filePath) {
+crossOver::server::loadClientConfFromXml(const QString& filePath) {
 	vector<ClientConfiguration> ccList;
 	QString errorMsg;
 	int errorLine, errorColumn;
