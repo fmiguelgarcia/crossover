@@ -1,18 +1,13 @@
 #include "server.hpp"
 #include "SystemMeasurement.hpp"
 #include "SimpleHttpServer.hpp"
+#include "DBBackEnd.hpp"
 #include <QCoreApplication>
 #include <QSettings>
-#include <QNetworkAccessManager>
-#include <QTcpServer>
-#include <QDebug>
-#include <QDir>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
 #include <QFileInfo>
+#include <QDir>
 #include <QBuffer>
-#include <QTimer>
+#include <QDebug>
 
 using namespace crossOver::server;
 using namespace crossOver::common;
@@ -27,7 +22,12 @@ namespace
 
 Server::Server(QObject *parent) : QObject(parent)
 {
-	setupDB();
+  // Set up cache.
+  QSettings settings;
+  const int clientCachedSize = settings.value( "clientCachedSize", 200).toInt();
+  m_realm2ClientIdCache.setMaxCost( clientCachedSize);
+
+	m_dbBackEnd = new DBBackEnd( this);
 	setupClientsAuthAndAlarms();
 	setupTcpServer();
 }
@@ -39,72 +39,20 @@ void Server::setupClientsAuthAndAlarms()
 	m_clientsConf = loadClientConfFromXml(xmlCCPath.absoluteFilePath());
 }
 
-void Server::setupDB()
-{
-	setupDBDefaultConnection();
-	initializeTablesIfNotExist();
-}
-
-void Server::setupDBDefaultConnection()
-{
-	QSettings settings;
-
-	// Setup DB connection.
-	const QFileInfo dbFile(QDir(QCoreApplication::applicationDirPath()),
-												 "server.db");
-	const QString dbName =
-			settings.value("DBName", dbFile.absoluteFilePath()).toString();
-	const QString dbDriver = settings.value("DBDriver", "QSQLITE").toString();
-
-	QSqlDatabase db = QSqlDatabase::addDatabase(dbDriver);
-	db.setDatabaseName(dbName);
-	if (!db.open())
-		qFatal("[crossOver::server::Server] It can not open the database %s",
-					 dbFile.absoluteFilePath().toLocal8Bit().constData());
-}
-
-void Server::initializeTablesIfNotExist()
-{
-	// Load resource
-	QFile dbSchemaInitializationScript(":/dbSchema.sql");
-	if (!dbSchemaInitializationScript.open(QIODevice::ReadOnly | QIODevice::Text))
-		qFatal("[crossOver::server::Server] It can not load the database schema "
-					 "initialization script");
-	QTextStream script(&dbSchemaInitializationScript);
-
-	QSqlDatabase db = QSqlDatabase::database();
-	QString sqlScriptLine;
-	do
-	{
-		sqlScriptLine = script.readLine();
-		if (!sqlScriptLine.isNull() && !sqlScriptLine.isEmpty())
-		{
-			QSqlQuery sqlQuery = db.exec(sqlScriptLine);
-			QSqlError sqlQueryError = sqlQuery.lastError();
-			if (sqlQueryError.type() != QSqlError::NoError)
-			{
-				qFatal("[crossOver::server::Server] Error on initialization DB "
-							 "schema.\nQuery: %s\n Error:%s",
-							 sqlScriptLine.toLocal8Bit().constData(),
-							 sqlQueryError.text().toLocal8Bit().constData());
-			}
-		}
-	} while (!sqlScriptLine.isNull());
-}
-
 void Server::setupTcpServer()
 {
 	m_httpServer = new SimpleHttpServer(this);
 	connect(m_httpServer, &SimpleHttpServer::payLoadReady, this,
-					&Server::deserializePayLoad);
+					&Server::processStatistics);
 	for ( const auto & cc : m_clientsConf)
 		m_httpServer->addBasicAuthentication( cc.key);
 }
 
-void Server::deserializePayLoad(QString realm, QByteArray data)
+void Server::processStatistics(QString realm, QByteArray data)
 {
 	SystemMeasurement sm;
 
+	// 1. Deserialize stats from HTTP payload
 	QBuffer buffer(&data);
 	buffer.open(QIODevice::ReadOnly);
 	sm.deserializeFrom(&buffer);
@@ -112,35 +60,10 @@ void Server::deserializePayLoad(QString realm, QByteArray data)
 	qDebug() << debugHeader() << "Cpu: " << sm.cpuLoad
 					 << " Free Ram: " << sm.freeRam << " Procs: " << sm.numProcs;
 
-	saveOnDB( realm, sm);
-}
+  // 2. Save stats into DB.
+	m_dbBackEnd->addStatsToClient( realm, sm);
 
-void Server::saveOnDB( const QString& realm, const crossOver::common::SystemMeasurement& sm)
-{
-	// 1. Get client ID
-	QSqlDatabase db = QSqlDatabase::database();
-	QSqlQuery clientIdRS = db.exec( QString("SELECT clientId FROM client WHERE realm LIKE %1").arg( realm));
-
-	if (!clientIdRS.next())
-	{
-		/// @todo Insertar el cliente si no existe.
-	}
-
-
-	const int clientId = clientIdRS.value(0).toInt();
-
-	QSqlQuery insertSql(
-			QStringLiteral( "INSERT INTO clientStats ( clientId, sampleEpoc, cpuLoad, freeRam , numRunProcs) VALUES (:clientId, now, :cpuLoad, :freeRam, :numRunProcs)"),
-			db);
-	insertSql.bindValue( ":clientId",  clientId);
-	insertSql.bindValue( ":cpuLoad", sm.cpuLoad );
-	insertSql.bindValue( ":freeRam", sm.freeRam);
-	insertSql.bindValue( ":numRunProcs", sm.numProcs);
-
-	if (!insertSql.exec())
-	{
-		qWarning() << "It can not insert new stats on client " << realm <<  ":" << insertSql.lastError().text();
-	}
+	// 3. Check alarms and send email.
 }
 
 int main(int argc, char *argv[])

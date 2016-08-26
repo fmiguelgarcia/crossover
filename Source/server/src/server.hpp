@@ -3,13 +3,15 @@
 #include "SystemMeasurement.hpp"
 #include <QObject>
 #include <QByteArray>
+#include <QCache>
 
 namespace crossOver
 {
 	namespace server
 	{
-
 		class SimpleHttpServer;
+		class DBBackEnd;
+
 		class Server : public QObject
 		{
 			Q_OBJECT
@@ -18,16 +20,18 @@ namespace crossOver
 
 		private:
 			void setupTcpServer();
-			void setupDBDefaultConnection();
-			void initializeTablesIfNotExist();
-			void setupDB();
-			void deserializePayLoad(QString realm, QByteArray data);
+			void processStatistics(QString realm, QByteArray data);
 			void setupClientsAuthAndAlarms();
-			void saveOnDB( const QString& realm, const crossOver::common::SystemMeasurement& sm);
+
+    private:
+      QString findClientMail( const QString &realm) const;
 
 		private:
 			SimpleHttpServer *m_httpServer;
+			DBBackEnd* m_dbBackEnd;
+
 			std::vector<ClientConfiguration> m_clientsConf;
+			QCache<QString, int> m_realm2ClientIdCache;
 		};
 	}
 }
