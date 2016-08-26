@@ -125,6 +125,7 @@ void Server::checkAlertForClient(QString realm, QString findClientMail, SystemMe
     if (!alertMessages.empty())
     {
       /// @todo generate message and send it
+
     }
   }
 }
