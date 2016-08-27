@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2016 Francisco Miguel Garcia
- *<miguel_garcia@programmingresearch.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -35,29 +34,35 @@ namespace crossOver
 {
 	namespace server
 	{
+		/// @brief It covers the SMTP email.
 		class SMTPAgent : public QObject
 		{
 			Q_OBJECT
 		public:
-			explicit SMTPAgent(const QString &mailServerUrl, QObject *parent = nullptr);
-			SMTPAgent( const SMTPAgent& ) = delete;
-			SMTPAgent& operator = (const SMTPAgent&) = delete;
+			explicit SMTPAgent (const QString &mailServerUrl,
+													QObject *parent = nullptr);
+			SMTPAgent (const SMTPAgent &) = delete;
+			SMTPAgent &operator=(const SMTPAgent &) = delete;
 
-			bool send(const QString &from, const QStringList &to,
-								const QString &subject, const QString& message) const;
+			/// @brief It sends the email.
+			bool send (const QString &from, const QStringList &to,
+								 const QString &subject, const QString &message) const;
 
-			int lastErrorCode() const noexcept;
-			QString lastErrorMessage() const noexcept;
+			/// @brief It returns the last error code.
+			int lastErrorCode () const noexcept;
 
-			void setUser( const QString& user );
-			QString user() const;
-			void setPassword( const QString& password);
+			/// @brief It returns an human readable associate to the error.
+			QString lastErrorMessage () const noexcept;
+
+			void setUser (const QString &user);
+			QString user () const;
+			void setPassword (const QString &password);
 
 		private:
-			std::shared_ptr<CURL> m_curl;
-			QString m_mailServer;
-			QString m_user;
-			QString m_password;
+			std::shared_ptr<CURL> m_curl; ///< CURL handler
+			QString m_mailServer;					///< SMTP server url
+			QString m_user;								///< User
+			QString m_password;						///< Password
 
 			mutable int m_lastErrorCode;
 			mutable QString m_lastErrorMessage;
