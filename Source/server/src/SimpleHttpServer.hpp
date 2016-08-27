@@ -33,36 +33,56 @@
 
 class QTcpSocket;
 class QTcpServer;
-namespace crossOver {
-	namespace server {
-		struct HttpRequestProc {
-			QTcpSocket *client;
-			QString realm;
-			std::map<QString, QString> headers;
-			QByteArray content;
+namespace crossOver
+{
+	namespace server
+	{
+		/// @brief This class is used to represent the HTTP process context.
+		struct HttpRequestProc
+		{
+			QTcpSocket *client;									///< Client socket.
+			QString realm;											///< Client authentication key
+			std::map<QString, QString> headers; ///< HTTP headers
+			QByteArray content;									///< HTTP payload
 
-			bool isHeaderFinished() const;
-			bool isContentReady() const;
+			/// @return It returns true if all headers have been yet read.
+			bool isHeaderFinished () const;
+
+			/// @return It returns true if the HTTP payload has been read.
+			bool isContentReady () const;
 		};
 
-		class SimpleHttpServer : public QObject {
+		/// @brief This class makes the abstraction of a Simple HTTP server.
+		/// It uses HTTP Basic Authentication.
+		class SimpleHttpServer : public QObject
+		{
 			Q_OBJECT
 		public:
-			explicit SimpleHttpServer(QObject *parent = nullptr);
+			explicit SimpleHttpServer (QObject *parent = nullptr);
 
-			void addBasicAuthentication(const QString &realm);
+			/// @brief It authorizes the @p realm as a valid user-password pair.
+			void addBasicAuthentication (const QString &realm);
 
 		signals:
-			void payLoadReady(QString realm, QByteArray data);
+			void payLoadReady (QString realm, QByteArray data);
 
 		private slots:
-			void onNewConnection();
-			void onReadyRead(std::shared_ptr<HttpRequestProc> rp);
-			void processRequest(std::shared_ptr<HttpRequestProc> rp);
+			/// @brief It proceccess new connections asynchronously.
+			void onNewConnection ();
+
+			/// @brief Whenever data is available on socket, this function process
+			///  the content of the new data.
+			void onReadyRead (std::shared_ptr<HttpRequestProc> rp);
+
+			/// @brief It checks the authentication. It authentication is not valid,
+			/// a http 401 request is generated and sent to client.
+			///  If the authorization is valid, this function will emit @c
+			///  payLoadReady signal.
+			void processRequest (std::shared_ptr<HttpRequestProc> rp);
 
 		private:
-			QTcpServer *m_serverSocket;
-			std::vector<QString> m_basicAuthAllowed;
+			QTcpServer *m_serverSocket;							 ///< Server socket
+			std::vector<QString> m_basicAuthAllowed; ///< Authorization keys.
 		};
 	}
 }

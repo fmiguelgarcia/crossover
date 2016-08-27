@@ -43,6 +43,8 @@ namespace crossOver
 			static QString dbDriver() noexcept;
 			static QString dbName() noexcept;
 
+			static QString httpPort() noexcept;
+
 		private:
 			ServerSettings () = delete;
 		};

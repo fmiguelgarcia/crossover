@@ -41,14 +41,20 @@ QString ServerSettings::smtpUser() noexcept
 QString ServerSettings::smtpPassword() noexcept
 { return QStringLiteral ("SMTP_PASSWORD");}
 
+QString ServerSettings::dbDriver() noexcept
+{ return QStringLiteral ("DB_NAME");}
+
+QString ServerSettings::dbName() noexcept
+{ return QStringLiteral ("DB_DRIVER");}
+
+
+QString ServerSettings::httpPort() noexcept
+{ return QStringLiteral ("HTTP_PORT");}
+
 
 QString ServerLog::header () noexcept
 { return QStringLiteral ("[crossOver::server]");}
 
 
-QString ServerLog::dbDriver() noexcept
-{ return QStringLiteral ("DB_NAME");}
 
-QString ServerLog::dbName() noexcept
-{ return QStringLiteral ("DB_DRIVER");}
 // clang-format on
