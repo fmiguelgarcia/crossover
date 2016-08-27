@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016 Francisco Miguel Garcia <miguel_garcia@programmingresearch.com>
+ * Copyright (c) 2016 Francisco Miguel Garcia
+ *<francisco.miguel.garcia.rodriguez@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,29 +24,25 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "ServerSettings.hpp"
 
-#pragma once
-#include <QObject>
+using namespace crossOver::server;
 
-namespace crossOver
-{
-  namespace common { struct SystemMeasurement; }
-  namespace server
-  {
-    class DBBackEnd
-      : public QObject
-    {
-      Q_OBJECT
-    public:
-      explicit DBBackEnd( QObject* parent = nullptr);
+// clang-format off
+QString ServerSettings::clientCacheSize() noexcept
+{ return QStringLiteral ("CLIENT_CACHE_SIZE");}
 
-      int findClientIdByRealm( const QString& realm) const;
-      int createClientId( const QString& realm, const QString &mail) const;
-      int addStatsToClient( const QString& realm, const QString &email, const crossOver::common::SystemMeasurement& sm) const;
+QString ServerSettings::smtpServer() noexcept
+{ return QStringLiteral ("SMTP_SERVER");}
 
-    private:
-      void setupDBDefaultConnection();
-      void initializeTablesIfNotExist();
-    };
-  }
-}
+QString ServerSettings::smtpUser() noexcept
+{ return QStringLiteral ("SMTP_USER");}
+
+QString ServerSettings::smtpPassword() noexcept
+{ return QStringLiteral ("SMTP_PASSWORD");}
+
+
+QString ServerLog::header () noexcept
+{ return QStringLiteral ("[crossOver::server]");}
+
+// clang-format on

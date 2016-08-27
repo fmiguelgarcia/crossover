@@ -18,6 +18,7 @@ set( server_SRCS
   ClientConfiguration.cpp
   DBBackEnd.cpp
   SMTPAgent.cpp
+  ServerSettings.cpp
   server.qrc )
 
 add_executable( server ${server_SRCS})

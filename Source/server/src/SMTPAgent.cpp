@@ -143,6 +143,9 @@ bool SMTPAgent::send(const QString &from, const QStringList &toList,
 	return res == CURLE_OK;
 }
 
+QString SMTPAgent::user() const
+{ return m_user;}
+
 void SMTPAgent::setUser(const QString& user)
 { m_user = user; }
 

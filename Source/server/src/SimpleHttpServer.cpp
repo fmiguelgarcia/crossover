@@ -101,9 +101,9 @@ namespace
 			int spaceIndex = itr->second.indexOf( ' ');
 			if (spaceIndex > 0)
 			{
-				const QString realm = itr->second.mid( spaceIndex +1);
+				rp->realm = itr->second.mid( spaceIndex +1);
 				isValidAuth = binary_search(begin(basicAuthRealM), end(basicAuthRealM),
-												 realm);
+												 rp->realm);
 			}
 		}
 		return isValidAuth;
@@ -183,8 +183,7 @@ void SimpleHttpServer::processRequest(shared_ptr<HttpRequestProc> rp)
 	sendHttp200(rp);
 
 	// Emit payload is ready
-	const QString realm = rp->headers.find(HttpHeaderAuthorization())->second;
-	emit payLoadReady(realm, rp->content);
+	emit payLoadReady(rp->realm, rp->content);
 }
 
 bool HttpRequestProc::isHeaderFinished() const

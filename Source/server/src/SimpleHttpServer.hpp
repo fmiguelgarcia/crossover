@@ -37,6 +37,7 @@ namespace crossOver {
 	namespace server {
 		struct HttpRequestProc {
 			QTcpSocket *client;
+			QString realm;
 			std::map<QString, QString> headers;
 			QByteArray content;
 

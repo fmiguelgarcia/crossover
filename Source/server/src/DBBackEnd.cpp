@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016 Francisco Miguel Garcia <miguel_garcia@programmingresearch.com>
+ * Copyright (c) 2016 Francisco Miguel Garcia
+ *<miguel_garcia@programmingresearch.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -38,108 +39,118 @@
 
 using namespace crossOver::server;
 
-DBBackEnd::DBBackEnd(QObject* parent): QObject(parent)
+DBBackEnd::DBBackEnd (QObject *parent) : QObject (parent)
 {
-  setupDBDefaultConnection();
-  initializeTablesIfNotExist();
+	setupDBDefaultConnection ();
+	initializeTablesIfNotExist ();
 }
 
-void DBBackEnd::initializeTablesIfNotExist()
+void DBBackEnd::initializeTablesIfNotExist ()
 {
-  QFile dbSchemaInitializationScript(":/dbSchema.sql");
-  if (!dbSchemaInitializationScript.open(QIODevice::ReadOnly | QIODevice::Text))
-    qFatal("[crossOver::server::Server] It can not load the database schema "
-           "initialization script");
-  QTextStream script(&dbSchemaInitializationScript);
+	QFile dbSchemaInitializationScript (":/dbSchema.sql");
+	if (!dbSchemaInitializationScript.open (QIODevice::ReadOnly |
+																					QIODevice::Text))
+		qFatal ("[crossOver::server::Server] It can not load the database schema "
+						"initialization script");
+	QTextStream script (&dbSchemaInitializationScript);
 
-  QSqlDatabase db = QSqlDatabase::database();
-  QString sqlScriptLine;
-  do
-  {
-    sqlScriptLine = script.readLine();
-    if (!sqlScriptLine.isNull() && !sqlScriptLine.isEmpty())
-    {
-      QSqlQuery sqlQuery = db.exec(sqlScriptLine);
-      QSqlError sqlQueryError = sqlQuery.lastError();
-      if (sqlQueryError.type() != QSqlError::NoError)
-      {
-        qFatal("[crossOver::server::Server] Error on initialization DB "
-               "schema.\nQuery: %s\n Error:%s",
-               sqlScriptLine.toLocal8Bit().constData(),
-               sqlQueryError.text().toLocal8Bit().constData());
-      }
-    }
-  } while (!sqlScriptLine.isNull());
+	QSqlDatabase db = QSqlDatabase::database ();
+	QString sqlScriptLine;
+	do
+	{
+		sqlScriptLine = script.readLine ();
+		if (!sqlScriptLine.isNull () && !sqlScriptLine.isEmpty ())
+		{
+			QSqlQuery sqlQuery = db.exec (sqlScriptLine);
+			QSqlError sqlQueryError = sqlQuery.lastError ();
+			if (sqlQueryError.type () != QSqlError::NoError)
+			{
+				qFatal ("[crossOver::server::Server] Error on initialization DB "
+								"schema.\nQuery: %s\n Error:%s",
+								sqlScriptLine.toLocal8Bit ().constData (),
+								sqlQueryError.text ().toLocal8Bit ().constData ());
+			}
+		}
+	} while (!sqlScriptLine.isNull ());
 }
 
-void DBBackEnd::setupDBDefaultConnection()
+void DBBackEnd::setupDBDefaultConnection ()
 {
-  QSettings settings;
+	QSettings settings;
 
-  // Setup DB connection.
-  const QFileInfo dbFile(QDir(QCoreApplication::applicationDirPath()),
-                         "server.db");
-  const QString dbName =
-      settings.value("DBName", dbFile.absoluteFilePath()).toString();
-  const QString dbDriver = settings.value("DBDriver", "QSQLITE").toString();
+	// Setup DB connection.
+	const QFileInfo dbFile (QDir (QCoreApplication::applicationDirPath ()),
+													"server.db");
+	const QString dbName =
+			settings.value ("DBName", dbFile.absoluteFilePath ()).toString ();
+	const QString dbDriver = settings.value ("DBDriver", "QSQLITE").toString ();
 
-  QSqlDatabase db = QSqlDatabase::addDatabase(dbDriver);
-  db.setDatabaseName(dbName);
-  if (!db.open())
-    qFatal("[crossOver::server::Server] It can not open the database %s",
-           dbFile.absoluteFilePath().toLocal8Bit().constData());
+	QSqlDatabase db = QSqlDatabase::addDatabase (dbDriver);
+	db.setDatabaseName (dbName);
+	if (!db.open ())
+		qFatal ("[crossOver::server::Server] It can not open the database %s",
+						dbFile.absoluteFilePath ().toLocal8Bit ().constData ());
 }
 
-int DBBackEnd::findClientIdByRealm(const QString& realm) const
+int DBBackEnd::findClientIdByRealm (const QString &realm) const
 {
-  int id = -1;
+	int id = -1;
 
-  QSqlDatabase db = QSqlDatabase::database();
-  QSqlQuery clientIdRS = db.exec(
-    QString("SELECT clientId FROM client WHERE realm LIKE %1")
-      .arg( realm));
+	QSqlDatabase db = QSqlDatabase::database ();
+	QSqlQuery clientIdRS =
+			db.exec (QString ("SELECT clientId FROM client WHERE realm LIKE '%1'")
+									 .arg (realm));
 
-  if (clientIdRS.next())
-      id = clientIdRS.value(0).toInt();
+	if (clientIdRS.next ())
+		id = clientIdRS.value (0).toInt ();
 
-  return id;
+	return id;
 }
 
-int DBBackEnd::createClientId( const QString& realm, const QString &mail) const
+int DBBackEnd::createClientId (const QString &realm, const QString &mail) const
 {
-  QSqlDatabase db = QSqlDatabase::database();
+	QSqlDatabase db = QSqlDatabase::database ();
+	const QString query =
+			QString ("INSERT INTO client (realm, email) VALUES ('%1', '%2')")
+					.arg (realm)
+					.arg (mail);
 
-  QSqlQuery newClientInsert = db.exec(
-    QString( "INSERT INTO client (realm, email) VALUES (%1, %2)")
-      .arg( realm)
-      .arg( mail));
+	QSqlQuery newClientInsert = db.exec (query);
+	const QSqlError lastError = newClientInsert.lastError ();
+	if (lastError.type () != QSqlError::NoError)
+	{
+		qCritical () << "Server can not add a new customer(" << mail
+								 << ") into database: " << lastError.text ();
+		return -1;
+	}
 
-  if (newClientInsert.lastError().type() != QSqlError::NoError)
-  {
-    qCritical() << "Server can not add a new customer(" << mail << ") into database";
-    return -1;
-  }
-
-  return newClientInsert.lastInsertId().toInt();
+	return newClientInsert.lastInsertId ().toInt ();
 }
 
-void DBBackEnd::addStatsToClient( const QString& realm, const crossOver::common::SystemMeasurement& sm) const
+int DBBackEnd::addStatsToClient (
+		const QString &realm, const QString &email,
+		const crossOver::common::SystemMeasurement &sm) const
 {
-  const int clientId = findClientIdByRealm( realm);
+	int clientId = findClientIdByRealm (realm);
+	if (clientId == -1)
+		clientId = createClientId (realm, email);
 
-  QSqlQuery insertSql(
-      QStringLiteral( "INSERT INTO clientStats ( clientId, sampleEpoc, cpuLoad, freeRam , numRunProcs) VALUES (:clientId, now, :cpuLoad, :freeRam, :numRunProcs)"));
-  insertSql.bindValue( ":clientId",  clientId);
-  insertSql.bindValue( ":cpuLoad", sm.cpuLoad );
-  insertSql.bindValue( ":freeRam", sm.freeRam);
-  insertSql.bindValue( ":numRunProcs", sm.numProcs);
+	const double freeRamPerc = (sm.freeRam * 100.0) / sm.totalRam;
+	const QString query = QString ("INSERT INTO stats ( clientId, sampleEpoc, "
+																 "cpuLoad, freeRam , numRunProcs) VALUES ( %1, "
+																 "datetime('now'), %2, %3, %4)")
+														.arg (clientId)
+														.arg (sm.cpuLoad)
+														.arg (freeRamPerc)
+														.arg (sm.numProcs);
 
-  if (!insertSql.exec())
-  {
-    qWarning() << "It can not insert new stats on client " << realm <<  ":" << insertSql.lastError().text();
-  }
+	QSqlDatabase db = QSqlDatabase::database ();
+	QSqlQuery insertSql = db.exec (query);
+	const QSqlError lastError = insertSql.lastError ();
+
+	if (lastError.type () != QSqlError::NoError)
+		qWarning () << "It can not insert new stats on client " << realm << ":"
+								<< lastError.text ();
+
+	return clientId;
 }
-
-
-
-

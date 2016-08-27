@@ -50,6 +50,7 @@ namespace crossOver
 			QString lastErrorMessage() const noexcept;
 
 			void setUser( const QString& user );
+			QString user() const;
 			void setPassword( const QString& password);
 
 		private:
