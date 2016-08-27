@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Francisco Miguel Garcia <miguel_garcia@programmingresearch.com>
+ * Copyright (c) 2016 Francisco Miguel Garcia
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -29,25 +29,31 @@
 
 namespace crossOver
 {
-  namespace server
-  {
-    struct ClientAlert
-    {
-      double memoryLimit;
-      double cpuLimit;
-      uint processesLimit;
-    };
+	namespace server
+	{
+		/// @brief It stores limits.
+		struct ClientAlert
+		{
+			double memoryLimit;	///< Free memory limit (in percentage)
+			double cpuLimit;		 ///< CPU load limit.
+			uint processesLimit; ///< Maximun number of running process.
+		};
 
-    struct ClientConfiguration
-    {
-      ClientConfiguration();
-      explicit ClientConfiguration( const QString& key);
+		/// @brief This structure links the user's alerts with its key
+		/// (authorization key)
+		///  and its email (used for notifications)
+		struct ClientConfiguration
+		{
+			ClientConfiguration ();
+			explicit ClientConfiguration (const QString &key);
 
-      QString mail;
-      QString key;
-      ClientAlert alerts;
-    };
+			QString mail;				///< E-mail used to notify
+			QString key;				///< Authorization token.
+			ClientAlert alerts; ///< Alerts.
+		};
 
-    std::vector<ClientConfiguration> loadClientConfFromXml( const QString& filePath);
-  }
+		/// @brief Utility function to load client configuration from XML file.
+		std::vector<ClientConfiguration>
+		loadClientConfFromXml (const QString &filePath);
+	}
 }

@@ -25,7 +25,7 @@
  *
  */
 
-#include "ClientConfiguration.h"
+#include "ClientConfiguration.hpp"
 #include <QFile>
 #include <QDebug>
 #include <QDomDocument>
