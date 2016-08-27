@@ -3,7 +3,8 @@ set( CMAKE_AUTOMOC ON)
 set( CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set( common_SRCS
-	SystemMeasurement.cpp )
+	SystemMeasurement.cpp
+	AppLogger.cpp )
 
 add_library(common ${common_SRCS} )
 target_link_libraries( common
