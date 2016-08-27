@@ -6,20 +6,25 @@ namespace crossOver
 {
 	namespace common
 	{
+		/// @brief A common structure shared by clients and
+		/// server.
 		struct SystemMeasurement
 		{
-			SystemMeasurement();
+			SystemMeasurement ();
 
-			void serializeTo( QIODevice *dev) const;
-			void deserializeFrom( QIODevice *dev);
+			/// @brief It serializes the content of this objet into a device.
+			void serializeTo (QIODevice *dev) const;
 
-			double cpuLoad;
-			quint64 totalRam;
-			quint64 freeRam;
-			quint64 numProcs;
+			/// @brief It deserializes from a device.
+			void deserializeFrom (QIODevice *dev);
+
+			double cpuLoad;		///< 5 minutes CPU load.
+			quint64 totalRam; ///< Total ram.
+			quint64 freeRam;	///< Total free ram
+			quint64 numProcs; ///< Number of running process
 		};
 
-		SystemMeasurement makeSystemMeasurement();
-
+		/// @brief It makes a system measurement.
+		SystemMeasurement makeSystemMeasurement ();
 	}
 }

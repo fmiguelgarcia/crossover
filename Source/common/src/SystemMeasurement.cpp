@@ -28,8 +28,6 @@ void SystemMeasurement::deserializeFrom(QIODevice* dev)
 	in >> cpuLoad >> sp >> freeRam >> sp >> totalRam >> sp >> numProcs;
 }
 
-
-
 SystemMeasurement crossOver::common::makeSystemMeasurement()
 {
   SystemMeasurement sm;
