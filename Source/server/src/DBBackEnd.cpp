@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2016 Francisco Miguel Garcia
- *<miguel_garcia@programmingresearch.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -27,6 +26,7 @@
 
 #include "DBBackEnd.hpp"
 #include "SystemMeasurement.hpp"
+#include "ServerSettings.hpp"
 #include <QSettings>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -82,8 +82,10 @@ void DBBackEnd::setupDBDefaultConnection ()
 	const QFileInfo dbFile (QDir (QCoreApplication::applicationDirPath ()),
 													"server.db");
 	const QString dbName =
-			settings.value ("DBName", dbFile.absoluteFilePath ()).toString ();
-	const QString dbDriver = settings.value ("DBDriver", "QSQLITE").toString ();
+			settings.value (ServerSettings::dbName (), dbFile.absoluteFilePath ())
+					.toString ();
+	const QString dbDriver =
+			settings.value (ServerSettings::dbDriver (), "QSQLITE").toString ();
 
 	QSqlDatabase db = QSqlDatabase::addDatabase (dbDriver);
 	db.setDatabaseName (dbName);

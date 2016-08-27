@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Francisco Miguel Garcia <miguel_garcia@programmingresearch.com>
+ * Copyright (c) 2016 Francisco Miguel Garcia
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -29,23 +29,38 @@
 
 namespace crossOver
 {
-  namespace common { struct SystemMeasurement; }
-  namespace server
-  {
-    class DBBackEnd
-      : public QObject
-    {
-      Q_OBJECT
-    public:
-      explicit DBBackEnd( QObject* parent = nullptr);
+	namespace common
+	{
+		struct SystemMeasurement;
+	}
+	namespace server
+	{
+		/// @brief This abstraction resolves the access to the database.
+		class DBBackEnd : public QObject
+		{
+			Q_OBJECT
+		public:
+			explicit DBBackEnd (QObject *parent = nullptr);
 
-      int findClientIdByRealm( const QString& realm) const;
-      int createClientId( const QString& realm, const QString &mail) const;
-      int addStatsToClient( const QString& realm, const QString &email, const crossOver::common::SystemMeasurement& sm) const;
+			/// @brief It gets the client Identifier from @p realm (its authentication
+			/// key).
+			/// @return It returns the clientId, or -1 if it is not found.
+			int findClientIdByRealm (const QString &realm) const;
 
-    private:
-      void setupDBDefaultConnection();
-      void initializeTablesIfNotExist();
-    };
-  }
+			/// @brief It creates and return the new client id.
+			int createClientId (const QString &realm, const QString &mail) const;
+
+			/// @brief It adds the statistic on a specific user.
+			int
+			addStatsToClient (const QString &realm, const QString &email,
+												const crossOver::common::SystemMeasurement &sm) const;
+
+		private:
+			/// @brief It defines the default database connection.
+			void setupDBDefaultConnection ();
+
+			/// @brief It creates the database Schema if it does not exit yet.
+			void initializeTablesIfNotExist ();
+		};
+	}
 }

@@ -45,4 +45,10 @@ QString ServerSettings::smtpPassword() noexcept
 QString ServerLog::header () noexcept
 { return QStringLiteral ("[crossOver::server]");}
 
+
+QString ServerLog::dbDriver() noexcept
+{ return QStringLiteral ("DB_NAME");}
+
+QString ServerLog::dbName() noexcept
+{ return QStringLiteral ("DB_DRIVER");}
 // clang-format on

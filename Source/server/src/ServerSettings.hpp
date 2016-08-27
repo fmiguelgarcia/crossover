@@ -40,6 +40,9 @@ namespace crossOver
 			static QString smtpUser() noexcept;
 			static QString smtpPassword() noexcept;
 
+			static QString dbDriver() noexcept;
+			static QString dbName() noexcept;
+
 		private:
 			ServerSettings () = delete;
 		};
