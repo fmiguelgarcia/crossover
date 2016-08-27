@@ -14,45 +14,46 @@ using namespace crossOver::client;
 using namespace crossOver::common;
 using namespace std;
 
-namespace {
-	inline QString debugHeader() noexcept {
-		return QStringLiteral("[crossOver::client::Agent]");
+namespace
+{
+	inline QString debugHeader () noexcept
+	{
+		return QStringLiteral ("[crossOver::client::Agent]");
 	}
 }
 
-Agent::Agent(QObject *parent) : QObject(parent) {
+Agent::Agent (QObject *parent) : QObject (parent)
+{
 	// load settings.
 	QSettings settings;
 	const uint miliSec =
-			settings.value("samplePeriodOnMiliSeconds", 5 * 60 * 1000).toUInt();
+			settings.value ("SAMPLE_PERIOD_MILISEC", 5 * 60 * 1000).toUInt ();
 	const QUrl server =
-			settings.value("server", QUrl("http://127.0.0.1:8080")).toUrl();
-
-	settings.setValue("server", server);
-	settings.setValue("samplePeriodOnMiliSeconds", miliSec);
-	settings.sync();
+			settings.value ("SERVER", "http://127.0.0.1:8080").toString();
 
 	// HttpSession
-	m_serverSession = new HttpSession(server, this);
+	m_serverSession = new HttpSession (server, this);
 
 	// Setup timer
-	m_sampleTimer = new QTimer(this);
-	connect(m_sampleTimer, &QTimer::timeout, this, &Agent::doAndSendMeasurements);
-	m_sampleTimer->start(miliSec);
+	m_sampleTimer = new QTimer (this);
+	connect (m_sampleTimer, &QTimer::timeout, this,
+					 &Agent::doAndSendMeasurements);
+	m_sampleTimer->start (miliSec);
 
 	// Launch first measurement.
-	doAndSendMeasurements();
+	doAndSendMeasurements ();
 }
 
-void Agent::doAndSendMeasurements() {
+void Agent::doAndSendMeasurements ()
+{
 	// Do measurements.
-	const SystemMeasurement sm = makeSystemMeasurement();
-	const QString now = QDateTime::currentDateTime().toString(Qt::ISODate);
-	qDebug() << debugHeader() << "[" << now << "]"
-					 << " CPU load: " << sm.cpuLoad << "%"
-					 << " free RAM: " << sm.freeRam << " bytes"
-					 << " total RAM: " << sm.totalRam << " bytes"
-					 << " Num Processes: " << sm.numProcs;
+	const SystemMeasurement sm = makeSystemMeasurement ();
+	const QString now = QDateTime::currentDateTime ().toString (Qt::ISODate);
+	qDebug () << debugHeader () << "[" << now << "]"
+						<< " CPU load: " << sm.cpuLoad << "%"
+						<< " free RAM: " << sm.freeRam << " bytes"
+						<< " total RAM: " << sm.totalRam << " bytes"
+						<< " Num Processes: " << sm.numProcs;
 
-	m_serverSession->sendMeasurement(sm);
+	m_serverSession->sendMeasurement (sm);
 }
