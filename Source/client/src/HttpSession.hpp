@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Francisco Miguel Garcia <miguel_garcia@programmingresearch.com>
+ * Copyright (c) 2016 Francisco Miguel Garcia
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -32,21 +32,26 @@
 class QNetworkAccessManager;
 namespace crossOver
 {
-namespace client
-{
-class HttpSession
-    : public QObject
-{
-    Q_OBJECT
-public:
-    explicit HttpSession ( QUrl server, QObject *parent = nullptr );
+	namespace client
+	{
+		/// @brief This class manages the HTTP request from client side.
+		/// It adds the authorization header.
+		/// User and password are loaded from configuration file.
+		class HttpSession : public QObject
+		{
+			Q_OBJECT
+		public:
+			explicit HttpSession (QUrl server, QObject *parent = nullptr);
 
-    void sendMeasurement ( const common::SystemMeasurement &sm ) const;
-    void sendMeasurement ( const QByteArray ) const;
+			/// @brief It serializes and send the sendMeasurement.
+			void sendMeasurement (const common::SystemMeasurement &sm) const;
 
-private:
-    QUrl m_server;
-    QNetworkAccessManager *m_netManager;
-};
-}
+			/// @brief It sends the data.
+			void sendMeasurement (const QByteArray) const;
+
+		private:
+			QUrl m_server;											 ///< HTTP Server
+			QNetworkAccessManager *m_netManager; ///< Network manager
+		};
+	}
 }

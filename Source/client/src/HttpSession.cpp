@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2016 Francisco Miguel Garcia
- *<miguel_garcia@programmingresearch.com>
+ *
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -37,87 +37,90 @@ using namespace crossOver::client;
 
 namespace
 {
-	void onReplyFinished(QNetworkReply *reply, QNetworkReply::NetworkError error)
+	void onReplyFinished (QNetworkReply *reply, QNetworkReply::NetworkError error)
 	{
 		if (error != QNetworkReply::NoError)
 		{
-			qWarning() << "It can not send measurements to server: "
-								 << reply->errorString();
+			qWarning () << "It can not send measurements to server: "
+									<< reply->errorString ();
 		}
 		// Clean.
-		reply->deleteLater();
+		reply->deleteLater ();
 	}
 
-	void setUpAuthenticator(QAuthenticator *auth)
+	void setUpAuthenticator (QAuthenticator *auth)
 	{
 		QSettings settings;
-		const QString user = settings.value("AUTH_USER", "Aladdin").toString();
+		const QString user = settings.value ("AUTH_USER", "Aladdin").toString ();
 		const QString password =
-				settings.value("AUTH_PASSWORD", "OpenSesame").toString();
+				settings.value ("AUTH_PASSWORD", "OpenSesame").toString ();
 
-		auth->setUser(user);
-		auth->setPassword(password);
+		auth->setUser (user);
+		auth->setPassword (password);
 	}
 }
 
-HttpSession::HttpSession(QUrl server, QObject *parent)
-		: QObject(parent), m_server(server)
+HttpSession::HttpSession (QUrl server, QObject *parent)
+		: QObject (parent), m_server (server)
 {
-	m_netManager = new QNetworkAccessManager(this);
-	connect(m_netManager, &QNetworkAccessManager::authenticationRequired, this,
-					[](QNetworkReply *reply, QAuthenticator *authenticator)
-					{
-		setUpAuthenticator(authenticator);
+	m_netManager = new QNetworkAccessManager (this);
+	/*
+	connect (m_netManager, &QNetworkAccessManager::authenticationRequired, this,
+					 [](QNetworkReply *reply, QAuthenticator *authenticator)
+					 {
+		setUpAuthenticator (authenticator);
 	});
-	connect(m_netManager, &QNetworkAccessManager::proxyAuthenticationRequired,
-					this, [](const QNetworkProxy &proxy, QAuthenticator *auth)
-					{
-		setUpAuthenticator(auth);
+	connect (m_netManager, &QNetworkAccessManager::proxyAuthenticationRequired,
+					 this, [](const QNetworkProxy &proxy, QAuthenticator *auth)
+					 {
+		setUpAuthenticator (auth);
 	});
+	*/
 }
 
-void HttpSession::sendMeasurement(
+void HttpSession::sendMeasurement (
 		const crossOver::common::SystemMeasurement &sm) const
 {
 	// Serialize
 	QBuffer buffer;
-	if (buffer.open(QIODevice::ReadWrite))
+	if (buffer.open (QIODevice::ReadWrite))
 	{
-		sm.serializeTo(&buffer);
-		QByteArray data = buffer.data();
-		qDebug() << "Serialize data(" << data.size() << ") :" << data;
-		sendMeasurement(data);
+		sm.serializeTo (&buffer);
+		QByteArray data = buffer.data ();
+		qDebug () << "Serialize data(" << data.size () << ") :" << data;
+		sendMeasurement (data);
 	}
 	else
-		qCritical() << "It can not serialize measurements";
+		qCritical () << "It can not serialize measurements";
 }
 
-void HttpSession::sendMeasurement(const QByteArray data) const
+void HttpSession::sendMeasurement (const QByteArray data) const
 {
 	QSettings settings;
-	const QString user = settings.value("AUTH_USER", "Aladdin").toString();
+	const QString user = settings.value ("AUTH_USER", "Aladdin").toString ();
 	const QString password =
-			settings.value("AUTH_PASSWORD", "OpenSesame").toString();
-	const QString realm = QString( "%1:%2").arg( user).arg( password);
+			settings.value ("AUTH_PASSWORD", "OpenSesame").toString ();
+	const QString realm = QString ("%1:%2").arg (user).arg (password);
 
 	// Get a connection to the server.
-	QNetworkRequest request(m_server);
-	request.setHeader(QNetworkRequest::UserAgentHeader, "CrossOverClient 1.0");
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "text/plain");
-	request.setHeader(QNetworkRequest::ContentLengthHeader, data.size());
-	request.setRawHeader( "Authorization", "Basic " + realm.toLocal8Bit().toBase64());
+	QNetworkRequest request (m_server);
+	request.setHeader (QNetworkRequest::UserAgentHeader, "CrossOverClient 1.0");
+	request.setHeader (QNetworkRequest::ContentTypeHeader, "text/plain");
+	request.setHeader (QNetworkRequest::ContentLengthHeader, data.size ());
+	request.setRawHeader ("Authorization",
+												"Basic " + realm.toLocal8Bit ().toBase64 ());
 
 	using QNetworkReplyErrorFunc =
 			void (QNetworkReply::*)(QNetworkReply::NetworkError);
 
-	QNetworkReply *reply = m_netManager->post(request, data);
-	connect(reply, &QNetworkReply::finished, this, [reply]()
-					{
-		onReplyFinished(reply, QNetworkReply::NoError);
+	QNetworkReply *reply = m_netManager->post (request, data);
+	connect (reply, &QNetworkReply::finished, this, [reply]()
+					 {
+		onReplyFinished (reply, QNetworkReply::NoError);
 	});
-	connect(reply, static_cast<QNetworkReplyErrorFunc>(&QNetworkReply::error),
-					this, [reply](QNetworkReply::NetworkError code)
-					{
-		onReplyFinished(reply, code);
+	connect (reply, static_cast<QNetworkReplyErrorFunc>(&QNetworkReply::error),
+					 this, [reply](QNetworkReply::NetworkError code)
+					 {
+		onReplyFinished (reply, code);
 	});
 }
