@@ -21,6 +21,10 @@
 	1.3. Running unit tests (SMTP agent)
 	
 		$ crossover/Source/build >  make test 
+		
+		
+***	NOTE: You can see the build process and one example of execution 
+	using the default parameters on https://asciinema.org/a/99utlp4edy8v32ipasefee13s 
 
 2. Instructions to create and initialize the database (if required)
 	Not needed because the database schema is created if it does not exit.
