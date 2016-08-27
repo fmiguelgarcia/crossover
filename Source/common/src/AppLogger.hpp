@@ -34,13 +34,20 @@ namespace crossOver
 {
 	namespace common
 	{
+		/// @brief This singleton replaces the Qt log handle and also redirects
+		/// each log message to a specific file.
 		class AppLogger : public QObject
 		{
 			Q_OBJECT
 		public:
+			/// @brief It creates the singleton and link it with @p output file.
+			/// This logger can only be initialize just once.
 			static void initialize (const QFileInfo &output);
 
-			static void handleMessage( QtMsgType type, const QMessageLogContext &context, const QString &msg);
+			/// @brief Function to handle messages.
+			static void handleMessage (QtMsgType type,
+																 const QMessageLogContext &context,
+																 const QString &msg);
 
 		private:
 			explicit AppLogger (const QFileInfo &output, QObject *parent = nullptr);
@@ -48,9 +55,9 @@ namespace crossOver
 			AppLogger operator=(const AppLogger &) = delete;
 
 		private:
-			static AppLogger* m_self;
-			QFile* m_outputFile;
-			QTextStream m_os;
+			static AppLogger *m_self;                                ///< Singleton
+			QFile *m_outputFile;                                     ///< Output file
+			QTextStream m_os;                                        ///< Stream over @c m_outputFile
 		};
 	}
 }
