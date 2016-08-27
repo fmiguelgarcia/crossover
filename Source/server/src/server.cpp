@@ -62,7 +62,6 @@ namespace
 
 Server::Server (QObject *parent) : QObject (parent)
 {
-
 	setupDBEngine();
 	setupClientsAuthAndAlarms ();
 	setupTcpServer ();
