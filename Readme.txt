@@ -14,9 +14,13 @@
 		$ crossover/Source> cd build
 		$ crossover/Source/build >  cmake -DCMAKE_BUILD_TYPE=Debug  -DCMAKE_INSTALL_PREFIX:PATH=install  ..
 		$ crossover/Source/build >  make install
+		
 
 		Files will be generated on "crossover/Source/build/install/bin".
-		
+	
+	1.3. Running unit tests (SMTP agent)
+	
+		$ crossover/Source/build >  make test 
 
 2. Instructions to create and initialize the database (if required)
 	Not needed because the database schema is created if it does not exit.
