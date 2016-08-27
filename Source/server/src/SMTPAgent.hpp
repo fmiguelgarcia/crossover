@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016 Francisco Miguel Garcia <miguel_garcia@programmingresearch.com>
+ * Copyright (c) 2016 Francisco Miguel Garcia
+ *<miguel_garcia@programmingresearch.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -25,23 +26,40 @@
  */
 #pragma once
 #include <QObject>
+#include <QStringList>
+#include <QString>
+#include <curl/curl.h>
+#include <memory>
 
-class CURL;
 namespace crossOver
 {
-  namespace server
-  {
-    class SMTPAgent
-      : public QObject
-    {
-      Q_OBJECT
-    public:
-      explicit SMTPAgent( QObject* parent = nullptr);
+	namespace server
+	{
+		class SMTPAgent : public QObject
+		{
+			Q_OBJECT
+		public:
+			explicit SMTPAgent(const QString &mailServerUrl, QObject *parent = nullptr);
+			SMTPAgent( const SMTPAgent& ) = delete;
+			SMTPAgent& operator = (const SMTPAgent&) = delete;
 
-      void send( const QString& from)
+			bool send(const QString &from, const QStringList &to,
+								const QString &subject, const QString& message) const;
 
-    private:
-      CURL * m_curl;
-    };
-  }
+			int lastErrorCode() const noexcept;
+			QString lastErrorMessage() const noexcept;
+
+			void setUser( const QString& user );
+			void setPassword( const QString& password);
+
+		private:
+			std::shared_ptr<CURL> m_curl;
+			QString m_mailServer;
+			QString m_user;
+			QString m_password;
+
+			mutable int m_lastErrorCode;
+			mutable QString m_lastErrorMessage;
+		};
+	}
 }
