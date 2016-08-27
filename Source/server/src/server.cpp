@@ -177,7 +177,7 @@ int main (int argc, char *argv[])
 	QCoreApplication app (argc, argv);
 	QCoreApplication::setOrganizationName ("CrossOver");
 	QCoreApplication::setApplicationName ("server");
-	QSettings::setPath (QSettings::NativeFormat, QSettings::SystemScope,
+	QSettings::setPath (QSettings::NativeFormat, QSettings::UserScope,
 											QCoreApplication::applicationDirPath ());
 
 	// Settup logger

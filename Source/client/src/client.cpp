@@ -1,8 +1,11 @@
-#include <QCoreApplication>
-#include <QSettings>
 #include "agent.hpp"
+#include "AppLogger.hpp"
+#include <QCoreApplication>
+#include <QDir>
+#include <QSettings>
 
 using namespace crossOver::client;
+using namespace crossOver::common;
 
 int main( int argc, char *argv[])
 {
@@ -11,7 +14,10 @@ int main( int argc, char *argv[])
 	QCoreApplication::setOrganizationName("CrossOver");
 	QCoreApplication::setApplicationName("client");
 
-	QSettings::setPath( QSettings::NativeFormat, QSettings::SystemScope, QCoreApplication::applicationDirPath());
+	QSettings::setPath( QSettings::NativeFormat, QSettings::UserScope, QCoreApplication::applicationDirPath());
+
+	// Settup logger
+	AppLogger::initialize( QFileInfo( QDir(QCoreApplication::applicationDirPath()), "client.log"));
 
 	// Create Client agent
 	Agent *agent = new Agent( &app);
